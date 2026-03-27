@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Azure App Insights + OpenTelemetry Demo</title>
+  <style>
+    :root {
+      --bg: #f6efe5;
+      --panel: rgba(255, 250, 244, 0.9);
+      --panel-strong: rgba(255, 245, 232, 0.98);
+      --ink: #1d1a17;
+      --muted: #675f56;
+      --accent: #c84f2b;
+      --accent-2: #205c4d;
+      --border: rgba(29, 26, 23, 0.12);
+      --shadow: 0 24px 80px rgba(78, 51, 27, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Bahnschrift, Aptos, "Segoe UI Variable", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(200, 79, 43, 0.18), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(32, 92, 77, 0.18), transparent 30%),
+        linear-gradient(135deg, #f7ead7, #efe3db 45%, #eee7de);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .shell {
+      width: min(1100px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+    }
+
+    .hero {
+      padding: 32px;
+      display: grid;
+      gap: 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(255,255,255,0.2));
+    }
+
+    .eyebrow {
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 0.95;
+      max-width: 12ch;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      max-width: 72ch;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 0;
+    }
+
+    .panel {
+      padding: 28px;
+      background: var(--panel-strong);
+      min-height: 420px;
+    }
+
+    .panel + .panel {
+      border-left: 1px solid var(--border);
+    }
+
+    .actions {
+      display: grid;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 140ms ease, opacity 140ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #fff6f1;
+    }
+
+    .secondary {
+      background: var(--accent-2);
+      color: #f2fffb;
+    }
+
+    .ghost {
+      background: rgba(29, 26, 23, 0.06);
+      color: var(--ink);
+    }
+
+    .meta {
+      display: grid;
+      gap: 12px;
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .meta-row {
+      display: grid;
+      gap: 6px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(29, 26, 23, 0.04);
+    }
+
+    .label {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      border-radius: 18px;
+      background: #171513;
+      color: #f5ede6;
+      overflow: auto;
+      min-height: 320px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel + .panel {
+        border-left: 0;
+        border-top: 1px solid var(--border);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Azure Monitor / OpenTelemetry / Demo</div>
+      <h1>Client to Server telemetry chain</h1>
+      <p class="subtitle">
+        This page drives a C# client that calls a Node.js server running on Azure Container Apps as well as multiple external dependencies, generating richer requests, dependencies, exceptions, traces, and metrics so you can inspect a fuller client-side topology in Application Map.
+      </p>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Scenarios</h2>
+        <div class="actions">
+          <button class="primary" data-action="/api/demo/rich">1. Run rich success scenario</button>
+          <button class="secondary" data-action="/api/demo/rich/failure">2. Run rich failure scenario</button>
+          <button class="ghost" data-action="/api/demo">3. Run original success scenario</button>
+          <button class="ghost" data-action="/api/demo/failure">4. Run original failure scenario</button>
+          <button class="ghost" data-action="/api/boom" data-method="GET">5. Trigger client exception endpoint</button>
+        </div>
+
+        <div class="meta" id="meta"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Result</h2>
+        <pre id="output">Loading configuration...</pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const output = document.getElementById("output");
+    const meta = document.getElementById("meta");
+
+    function write(value) {
+      output.textContent = typeof value === "string"
+        ? value
+        : JSON.stringify(value, null, 2);
+    }
+
+    async function loadConfig() {
+      const response = await fetch("/api/config");
+      const config = await response.json();
+      meta.innerHTML = [
+        ["Client Service", config.serviceName],
+        ["Version", config.serviceVersion],
+        ["Server Base Url", config.serverBaseUrl]
+      ].map(([label, value]) => `
+        <div class="meta-row">
+          <div class="label">${label}</div>
+          <div>${value}</div>
+        </div>`).join("");
+      write({ message: "Ready", config });
+    }
+
+    async function invoke(action, method = "POST") {
+      write({ status: "running", action, startedAt: new Date().toISOString() });
+      try {
+        const response = await fetch(action, { method });
+        const text = await response.text();
+        let payload;
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          payload = text;
+        }
+
+        write({
+          statusCode: response.status,
+          ok: response.ok,
+          payload
+        });
+      } catch (error) {
+        write({
+          status: "client-error",
+          message: error.message
+        });
+      }
+    }
+
+    document.querySelectorAll("button[data-action]").forEach(button => {
+      button.addEventListener("click", () => invoke(button.dataset.action, button.dataset.method || "POST"));
+    });
+
+    loadConfig().catch(error => write({ status: "init-error", message: error.message }));
+  </script>
+</body>
+</html>
