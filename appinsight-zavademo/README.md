@@ -44,6 +44,9 @@ The server emits these typical telemetry types:
 - custom traces such as `server.orchestrate-demo`
 - metrics such as `server.demo.requests` and `server.demo.duration`
 
+![Telemetry screenshot](img/telemetry-screenshot.png)
+![Application Map example](img/image.png)
+
 ## Repository Layout
 
 - `client/`: C# ASP.NET Core client
