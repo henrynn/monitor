@@ -44,8 +44,7 @@ The server emits these typical telemetry types:
 - custom traces such as `server.orchestrate-demo`
 - metrics such as `server.demo.requests` and `server.demo.duration`
 
-![Telemetry screenshot](img/telemetry-screenshot.png)
-![Application Map example](img/image.png)
+
 
 ## Repository Layout
 
@@ -130,6 +129,9 @@ Notes:
 
 - if Blob Storage or Key Vault roles were just assigned, RBAC propagation may take a few minutes
 - even if an Azure SDK dependency call fails, dependency telemetry will usually still appear in Application Insights
+
+![Telemetry screenshot](img/telemetry-screenshot.png)
+![Application Map example](img/image.png)
 
 ## Recommended Validation Path
 
