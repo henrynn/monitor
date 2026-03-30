@@ -1,0 +1,19 @@
+{
+  "name": "ptu-monitor-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Azure OpenAI PTU utilization monitor with App Insights + OpenTelemetry",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@azure/monitor-opentelemetry": "^1.16.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/resources": "^2.1.0",
+    "@opentelemetry/semantic-conventions": "^1.37.0",
+    "axios": "^1.9.0",
+    "express": "^4.21.2",
+    "winston": "^3.17.0"
+  }
+}
